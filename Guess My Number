@@ -1,0 +1,26 @@
+import random, tkinter as tk
+from tkinter import messagebox
+
+s= random.randint(1, 20)
+attempts=10
+r = tk.Tk()      #root
+r.title("Guess the Number between (1-20)")
+
+tk.Label(r, text="Guess a number between (1-20)", font=("Arial", 14)).pack()
+e = tk.Entry(r, font=("Arial", 14))
+e.pack()
+res = tk.Label(r, text="", font=("Arial", 12))
+res.pack()
+
+def check():
+    global attempts
+    try: g = int(e.get())
+    except: return messagebox.showwarning("Invalid Input", "Please enter a valid number.")
+    if g == s: messagebox.showinfo("Congratulations!", "Correct! You've guessed the number!"); r.quit()
+    else:
+        res.config(text="Too low! Try again." if g < s else "Too high! Try again.")
+        attempts -= 1
+        if not attempts: messagebox.showinfo("Lost", f"Game Over You've run out of attempts! The number was {s}"); r.quit()
+
+tk.Button(r, text="Submit", font=("Arial", 14), command=check).pack()
+r.mainloop()
