@@ -1,0 +1,121 @@
+import tkinter as tk
+import random
+import os
+import speech_recognition as sr
+from gtts import gTTS
+
+# Define chatbot responses (ONLY programming-related)
+intents = {
+    "intents": [
+        {
+            "tag": "programming",
+            "patterns": [
+                "what is computer programming",
+                "define programming",
+                "explain programming",
+                "what is coding"
+            ],
+            "responses": [
+                "Computer programming is the process of writing, testing, and maintaining instructions (code) that a computer follows to perform specific tasks."
+            ]
+        }
+    ]
+}
+
+def speak(text):
+    """ Convert text to speech and play it using the default system media player """
+    tts = gTTS(text, lang="en")
+    audio_file = "response.mp3"
+    tts.save(audio_file)
+
+    # Play the audio using the default system media player
+    if os.name == "nt":  # Windows
+        os.system(f"start {audio_file}")
+    elif os.uname().sysname == "Darwin":  # macOS
+        os.system(f"afplay {audio_file}")
+    else:  # Linux
+        os.system(f"mpg321 {audio_file} || mpv {audio_file}")
+
+def get_response(user_input):
+    """ Get chatbot response based on user input """
+    user_input = user_input.lower()
+    for intent in intents["intents"]:
+        for pattern in intent["patterns"]:
+            if pattern.lower() in user_input:
+                return random.choice(intent["responses"])
+    return "I can only answer programming-related questions."
+
+def send_message():
+    """ Handle user input and generate chatbot response with audio """
+    user_message = entry.get()
+    if user_message:
+        chat_history.config(state="normal")
+        chat_history.insert(tk.END, "You: " + user_message + "\n", "user")
+        response = get_response(user_message)
+        chat_history.insert(tk.END, "Bot: " + response + "\n", "bot")
+        chat_history.config(state="disabled")
+
+        # Speak the chatbot response
+        speak(response)
+
+        # Clear user input field
+        entry.delete(0, tk.END)
+
+def listen_for_voice():
+    """ Listen for voice input and respond """
+    recognizer = sr.Recognizer()
+
+    with sr.Microphone() as source:
+        chat_history.config(state="normal")
+        chat_history.insert(tk.END, "Listening...\n", "bot")
+        chat_history.config(state="disabled")
+
+        try:
+            audio = recognizer.listen(source, timeout=5)
+            user_message = recognizer.recognize_google(audio)
+
+            chat_history.config(state="normal")
+            chat_history.insert(tk.END, "You (Voice): " + user_message + "\n", "user")
+            chat_history.config(state="disabled")
+
+            response = get_response(user_message)
+
+            chat_history.config(state="normal")
+            chat_history.insert(tk.END, "Bot: " + response + "\n", "bot")
+            chat_history.config(state="disabled")
+
+            speak(response)
+
+        except sr.UnknownValueError:
+            chat_history.config(state="normal")
+            chat_history.insert(tk.END, "Bot: Sorry, I didn't understand.\n", "bot")
+            chat_history.config(state="disabled")
+        except sr.RequestError:
+            chat_history.config(state="normal")
+            chat_history.insert(tk.END, "Bot: Speech service error.\n", "bot")
+            chat_history.config(state="disabled")
+
+# Create GUI
+root = tk.Tk()
+root.title("Programming Voice Chatbot")
+root.geometry("500x500")
+
+# Chat history text box
+chat_history = tk.Text(root, height=20, width=60, state="disabled", wrap="word")
+chat_history.tag_config("user", foreground="blue")
+chat_history.tag_config("bot", foreground="green")
+chat_history.pack(pady=10)
+
+# User input field
+entry = tk.Entry(root, width=50)
+entry.pack(pady=5)
+
+# Buttons for text and voice input
+send_button = tk.Button(root, text="Send", command=send_message)
+send_button.pack()
+
+voice_button = tk.Button(root, text="Speak", command=listen_for_voice)
+voice_button.pack()
+
+# Run GUI
+root.mainloop()
