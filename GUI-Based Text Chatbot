@@ -1,0 +1,84 @@
+import tkinter as tk
+import json
+import random
+
+# Load intents from JSON
+intents = {
+    "intents": [
+        {
+            "tag": "greeting",
+            "patterns": ["Hi", "Hey", "How are you", "Is anyone there?", "Hello", "Good day"],
+            "responses": ["Hey :-)", "Hello, thanks for visiting", "Hi there, what can I do for you?", "Hi there, how can I help?"]
+        },
+        {
+            "tag": "goodbye",
+            "patterns": ["Bye", "See you later", "Goodbye"],
+            "responses": ["See you later, thanks for visiting", "Have a nice day", "Bye! Come back again soon."]
+        },
+        {
+            "tag": "thanks",
+            "patterns": ["Thanks", "Thank you", "That's helpful", "Thank's a lot!"],
+            "responses": ["Happy to help!", "Any time!", "My pleasure"]
+        },
+        {
+            "tag": "items",
+            "patterns": ["Which items do you have?", "What kinds of items are there?", "What do you sell?"],
+            "responses": ["We sell coffee and tea", "We have coffee and tea"]
+        },
+        {
+            "tag": "payments",
+            "patterns": ["Do you take credit cards?", "Do you accept Mastercard?", "Can I pay with Paypal?", "Are you cash only?"],
+            "responses": ["We accept VISA, Mastercard and Paypal", "We accept most major credit cards, and Paypal"]
+        },
+        {
+            "tag": "delivery",
+            "patterns": ["How long does delivery take?", "How long does shipping take?", "When do I get my delivery?"],
+            "responses": ["Delivery takes 2-4 days", "Shipping takes 2-4 days"]
+        },
+        {
+            "tag": "funny",
+            "patterns": ["Tell me a joke!", "Tell me something funny!", "Do you know a joke?"],
+            "responses": ["Why did the hipster burn his mouth? He drank the coffee before it was cool.", "What did the buffalo say when his son left for college? Bison."]
+        }
+    ]
+}
+
+# Function to find response
+def get_response(user_input):
+    user_input = user_input.lower()
+    for intent in intents["intents"]:
+        for pattern in intent["patterns"]:
+            if pattern.lower() == user_input:
+                return random.choice(intent["responses"])
+    return "I'm sorry, I don't understand."
+
+# Function to handle user input
+def send_message():
+    user_text = entry.get()
+    if user_text.strip():  # Check if input is not empty
+        chat_box.config(state=tk.NORMAL)
+        chat_box.insert(tk.END, "You: " + user_text + "\n", "user")
+        chat_box.insert(tk.END, "Bot: " + get_response(user_text) + "\n\n", "bot")
+        chat_box.config(state=tk.DISABLED)
+        entry.delete(0, tk.END)  # Clear input field
+        chat_box.yview(tk.END)  # Scroll down to the latest message
+
+# GUI setup
+root = tk.Tk()
+root.title("Chatbot")
+
+# Chat window
+chat_box = tk.Text(root, bg="lightgrey", width=50, height=20, state=tk.DISABLED)
+chat_box.tag_configure("user", foreground="blue", font=("Arial", 10, "bold"))
+chat_box.tag_configure("bot", foreground="green", font=("Arial", 10, "italic"))
+chat_box.pack(padx=10, pady=10)
+
+# Entry box
+entry = tk.Entry(root, width=40)
+entry.pack(padx=10, pady=5)
+
+# Send button
+send_button = tk.Button(root, text="Send", command=send_message)
+send_button.pack(pady=5)
+
+root.mainloop()
